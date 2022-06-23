@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      max-parallel: 1
       matrix:
         version:
           - 7.1.33-fpm-alpine3.10
