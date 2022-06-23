@@ -174,9 +174,11 @@ RUN set -x \
     && apk add --no-cache tzdata git supervisor \
     && mkdir -p /var/log/supervisor \
         \
-    && apk add --no-cache --virtual .py-pip-deps py2-pip \
-    && pip install --no-cache-dir supervisor-stdout \
-    && apk del .py-pip-deps
+    && apk add --no-cache py2-pip
+#    && apk add --no-cache --virtual .py-pip-deps py2-pip \
+#    && pip install --no-cache-dir supervisor-stdout
+#    \
+#    && apk del .py-pip-deps
 
 # Copy resources
 COPY docker-entrypoint.sh   /docker-entrypoint.sh
@@ -191,6 +193,7 @@ COPY index.php              /workspace/public/index.php
 
 # Modify permission
 RUN set -x \
+    && pip install --no-cache-dir supervisor-stdout \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R +x /docker-entrypoint.d \
         \
