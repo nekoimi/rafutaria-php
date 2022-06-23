@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths:
+      - '.github/workflows/docker-image.yml'
       - '**/Dockerfile'
       - '**/*.sh'
       - '**/*.conf'
@@ -15,6 +16,7 @@ on:
     branches:
       - master
     paths:
+      - '.github/workflows/docker-image.yml'
       - '**/Dockerfile'
       - '**/*.sh'
       - '**/*.conf'
