@@ -4,9 +4,17 @@ on:
   push:
     branches:
       - 7.1.33
+    paths-ignore:
+      - '.gitignore'
+      - 'README.md'
+      - 'LICENSE'
   pull_request:
     branches:
       - 7.1.33
+    paths-ignore:
+      - '.gitignore'
+      - 'README.md'
+      - 'LICENSE'
 
 jobs:
 
