@@ -5,7 +5,7 @@ A PHP FPM and Nginx running environment.
 ### 环境变量
 
 |名称|说明|
-|:---:|:---:|
+|:---|:---|
 |NGX_WORKER_PROCESSES|配置nginx进程数，默认为1，可选值：auto或数字|
 |APPLICATION_ENV|应用运行环境：生产环境 - production|
 |CRONTAB_ENABLE|是否启用crontab定时任务，false - 开启 / true - 关闭 |
