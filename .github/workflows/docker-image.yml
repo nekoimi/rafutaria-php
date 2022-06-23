@@ -55,7 +55,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: .
           file: ./${{ matrix.version }}/Dockerfile
           push: true
           tags: nekoimi/rafutaria-php:${{ matrix.version }}
