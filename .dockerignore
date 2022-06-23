@@ -1,0 +1,6 @@
+*
+!docker-entrypoint.sh
+!docker-entrypoint.d
+!nginx
+!supervisor.d
+!index.php
