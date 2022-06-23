@@ -23,7 +23,7 @@ A PHP FPM and Nginx running environment.
 
 ### Used
 
-- php 7.1.33:
+- **php 7.1.33**
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/7.1.33-fpm-alpine3.10)](https://hub.docker.com/r/nekoimi/rafutaria-php)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
@@ -33,7 +33,7 @@ docker pull nekoimi/rafutaria-php:7.1.33-fpm-alpine3.10
 ```
 
 
-- php 7.2.34:
+- **php 7.2.34**
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/7.2.34-fpm-alpine3.12)](https://hub.docker.com/r/nekoimi/rafutaria-php)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
@@ -43,7 +43,7 @@ docker pull nekoimi/rafutaria-php:7.2.34-fpm-alpine3.12
 ```
 
 
-- php 7.4.30:
+- **php 7.4.30**
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/7.4.30-fpm-alpine3.16)](https://hub.docker.com/r/nekoimi/rafutaria-php)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
@@ -53,7 +53,7 @@ docker pull nekoimi/rafutaria-php:7.4.30-fpm-alpine3.16
 ```
 
 
-- php 8.1.7:
+- **php 8.1.7**
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/8.1.7-fpm-alpine3.16)](https://hub.docker.com/r/nekoimi/rafutaria-php)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
