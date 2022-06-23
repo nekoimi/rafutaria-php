@@ -1,10 +1,16 @@
 # rafutaria-php
 
+<center>
+<img src="rafutaria.png" />
+</center>
+
+![](rafutaria.png)
+
 A PHP FPM and Nginx running environment.
 
-### 环境变量
+### Environment variable
 
-|名称|说明|
+|name|desc|
 |:---|:---|
 |NGX_WORKER_PROCESSES|配置nginx进程数，默认为1，可选值：auto或数字|
 |APPLICATION_ENV|应用运行环境：生产环境 - production|
@@ -18,3 +24,44 @@ A PHP FPM and Nginx running environment.
 |PHP_PM_MIN_SPARE_SERVERS|动态方式下的最小php-fpm进程数量|
 |PHP_PM_MAX_SPARE_SERVERS|动态方式下的最大php-fpm进程数量|
 |PHP_PM_MAX_REQUESTS|请求数累积到一定数量后，自动重启该进程|
+
+### Used
+
+- php 7.1.33:
+
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/7.1.33-fpm-alpine3.10)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+[![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+
+```shell
+docker pull nekoimi/rafutaria-php:7.1.33-fpm-alpine3.10
+```
+
+
+- php 7.2.34:
+
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/7.2.34-fpm-alpine3.12)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+[![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+
+```shell
+docker pull nekoimi/rafutaria-php:7.2.34-fpm-alpine3.12
+```
+
+
+- php 7.4.30:
+
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/7.4.30-fpm-alpine3.16)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+[![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+
+```shell
+docker pull nekoimi/rafutaria-php:7.4.30-fpm-alpine3.16
+```
+
+
+- php 8.1.7:
+
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/nekoimi/rafutaria-php/8.1.7-fpm-alpine3.16)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+[![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
+
+```shell
+docker pull nekoimi/rafutaria-php:8.1.7-fpm-alpine3.16
+```
