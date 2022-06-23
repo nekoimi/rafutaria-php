@@ -54,6 +54,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: {{defaultContext}}/${{ matrix.version }}/Dockerfile
+          load: true
+          file: ./${{ matrix.version }}/Dockerfile
           push: true
           tags: nekoimi/rafutaria-php:${{ matrix.version }}
