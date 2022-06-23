@@ -1,9 +1,5 @@
 # rafutaria-php
 
-<center>
-<img src="rafutaria.png" />
-</center>
-
 ![](rafutaria.png)
 
 A PHP FPM and Nginx running environment.
