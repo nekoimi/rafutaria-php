@@ -19,48 +19,52 @@ PHP_PROC_MAX_REQUESTS=${PHP_PM_MAX_REQUESTS:-"500"}
 exec_config_php_ini() {
   ### php.ini
   # copy php.ini
-  if [ -f $PHP_INI_DIR/php.ini ]; then
-    rm -f $PHP_INI_DIR/php.ini
+  if [ -f $PHP_INI_DIR/php.ini-production ]; then
+    if [ -f $PHP_INI_DIR/php.ini ]; then
+      rm -f $PHP_INI_DIR/php.ini
+    fi
+    cp -f $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
+    # config resource
+    sed -i 's/max_execution_time = 60/max_execution_time = 60/g' $PHP_INI_DIR/php.ini
+    sed -i 's/memory_limit = 128M/memory_limit = 128M/g' $PHP_INI_DIR/php.ini
+    sed -i 's/post_max_size = 8M/post_max_size = 10M/g' $PHP_INI_DIR/php.ini
+    sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' $PHP_INI_DIR/php.ini
+    sed -i 's/max_file_uploads = 20/max_file_uploads = 1/g' $PHP_INI_DIR/php.ini
+    # config opcache
+    sed -i 's/;opcache.enable=1/opcache.enable=1/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.memory_consumption=128/opcache.memory_consumption=128/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.interned_strings_buffer=8/opcache.interned_strings_buffer=8/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.max_accelerated_files=10000/opcache.max_accelerated_files=10000/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.revalidate_freq=2/opcache.revalidate_freq=2/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.fast_shutdown=0/opcache.fast_shutdown=0/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.enable_file_override=0/opcache.enable_file_override=1/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.validate_timestamps=1/opcache.validate_timestamps=1/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.file_cache=/opcache.file_cache=\/tmp/g' $PHP_INI_DIR/php.ini
+    sed -i 's/;opcache.huge_code_pages=1/opcache.huge_code_pages=1/g' $PHP_INI_DIR/php.ini
   fi
-  cp -f $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
-  # config resource
-  sed -i 's/max_execution_time = 60/max_execution_time = 60/g' $PHP_INI_DIR/php.ini
-  sed -i 's/memory_limit = 128M/memory_limit = 128M/g' $PHP_INI_DIR/php.ini
-  sed -i 's/post_max_size = 8M/post_max_size = 10M/g' $PHP_INI_DIR/php.ini
-  sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' $PHP_INI_DIR/php.ini
-  sed -i 's/max_file_uploads = 20/max_file_uploads = 1/g' $PHP_INI_DIR/php.ini
-  # config opcache
-  sed -i 's/;opcache.enable=1/opcache.enable=1/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.memory_consumption=128/opcache.memory_consumption=128/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.interned_strings_buffer=8/opcache.interned_strings_buffer=8/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.max_accelerated_files=10000/opcache.max_accelerated_files=10000/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.revalidate_freq=2/opcache.revalidate_freq=2/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.fast_shutdown=0/opcache.fast_shutdown=0/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.enable_file_override=0/opcache.enable_file_override=1/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.validate_timestamps=1/opcache.validate_timestamps=1/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.file_cache=/opcache.file_cache=\/tmp/g' $PHP_INI_DIR/php.ini
-  sed -i 's/;opcache.huge_code_pages=1/opcache.huge_code_pages=1/g' $PHP_INI_DIR/php.ini
 }
 
 exec_config_php_fpm() {
   ### www.conf
-  if [ -f $PHP_CONF_DIR/www.conf ]; then
-    rm -f $PHP_CONF_DIR/www.conf
-  fi
-  cp -f $PHP_CONF_DIR/www.conf.default $PHP_CONF_DIR/www.conf
+  if [ -f $PHP_CONF_DIR/www.conf.default ]; then
+    if [ -f $PHP_CONF_DIR/www.conf ]; then
+      rm -f $PHP_CONF_DIR/www.conf
+    fi
+    cp -f $PHP_CONF_DIR/www.conf.default $PHP_CONF_DIR/www.conf
 
-  # 进程管理模式
-  sed -i "s/pm = dynamic/pm = $PHP_PROC_MANAGER_MODE/g" $PHP_CONF_DIR/www.conf
-  # 静态方式下开启的php-fpm进程数量
-  sed -i "s/pm.max_children = 5/pm.max_children = $PHP_PROC_MAX_CHILDREN/g" $PHP_CONF_DIR/www.conf
-  # 动态方式下的起始php-fpm进程数量
-  sed -i "s/pm.start_servers = 2/pm.start_servers = $PHP_PROC_START_SERVERS/g" $PHP_CONF_DIR/www.conf
-  # 动态方式下的最小php-fpm进程数量
-  sed -i "s/pm.min_spare_servers = 1/pm.min_spare_servers = $PHP_PROC_MIN_SPARE_SERVERS/g" $PHP_CONF_DIR/www.conf
-  # 动态方式下的最大php-fpm进程数量
-  sed -i "s/pm.max_spare_servers = 3/pm.max_spare_servers = $PHP_PROC_MAX_SPARE_SERVERS/g" $PHP_CONF_DIR/www.conf
-  # 请求数累积到一定数量后，自动重启该进程
-  sed -i "s/;pm.max_requests = 500/pm.max_requests = $PHP_PROC_MAX_REQUESTS/g" $PHP_CONF_DIR/www.conf
+    # 进程管理模式
+    sed -i "s/pm = dynamic/pm = $PHP_PROC_MANAGER_MODE/g" $PHP_CONF_DIR/www.conf
+    # 静态方式下开启的php-fpm进程数量
+    sed -i "s/pm.max_children = 5/pm.max_children = $PHP_PROC_MAX_CHILDREN/g" $PHP_CONF_DIR/www.conf
+    # 动态方式下的起始php-fpm进程数量
+    sed -i "s/pm.start_servers = 2/pm.start_servers = $PHP_PROC_START_SERVERS/g" $PHP_CONF_DIR/www.conf
+    # 动态方式下的最小php-fpm进程数量
+    sed -i "s/pm.min_spare_servers = 1/pm.min_spare_servers = $PHP_PROC_MIN_SPARE_SERVERS/g" $PHP_CONF_DIR/www.conf
+    # 动态方式下的最大php-fpm进程数量
+    sed -i "s/pm.max_spare_servers = 3/pm.max_spare_servers = $PHP_PROC_MAX_SPARE_SERVERS/g" $PHP_CONF_DIR/www.conf
+    # 请求数累积到一定数量后，自动重启该进程
+    sed -i "s/;pm.max_requests = 500/pm.max_requests = $PHP_PROC_MAX_REQUESTS/g" $PHP_CONF_DIR/www.conf
+  fi
 }
 
 exec_config_xdebug() {
@@ -94,8 +98,8 @@ exec_config_xdebug() {
   else
     if [ -f $DOCKER_PHP_EXT_XDEBUG ]; then
       rm -f $DOCKER_PHP_EXT_XDEBUG
-      echo 'Xdebug disabled!'
     fi
+    echo 'Xdebug disabled!'
   fi
 }
 

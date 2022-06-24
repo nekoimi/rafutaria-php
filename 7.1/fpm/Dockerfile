@@ -1,7 +1,8 @@
 #
 # rafutaria-php
 #
-# php: 7.4.30
+# alpine: 3.10
+# php: 7.1.33
 # nginx: 1.17.1
 # composer: 2.2.14
 # user-group: 82 www-data
