@@ -6,7 +6,7 @@
 # composer: 2.2.14
 # user-group: 82 www-data
 #
-FROM php:7.2.34-fpm-alpine3.12
+FROM php:7.2.34-alpine3.12
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
