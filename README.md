@@ -8,7 +8,13 @@
 
 ![](rafutaria.png)
 
-一个PHP运行环境，集成常用扩展。
+一个PHP运行环境，集成yaf、redis、xdebug、swoole等常用扩展。
+
+### Runtime
+
+|fpm|cli|
+|:-----:|:-----:|
+|php + nginx|php|
 
 ### Environment variable
 
@@ -29,18 +35,26 @@
 
 ### Used
 
-- **php 7.1**
-
-
 ```shell
-docker pull nekoimi/rafutaria-php:7.1-fpm-alpine
+docker pull nekoimi/rafutaria-php:{version}-{mode}-alpine
 ```
 
+|version|image of fpm|image of cli|
+|:-----:|:-----:|:-----:|
+|7.1|**nekoimi/rafutaria-php:7.1-fpm-alpine**|**nekoimi/rafutaria-php:7.1-cli-alpine**|
+|7.2|**nekoimi/rafutaria-php:7.2-fpm-alpine**|**nekoimi/rafutaria-php:7.2-cli-alpine**|
+|7.3|**nekoimi/rafutaria-php:7.3-fpm-alpine**|**nekoimi/rafutaria-php:7.3-cli-alpine**|
 
-#### cli
+### Ext
 
-- **php 7.1**
-
-```shell
-docker pull nekoimi/rafutaria-php:7.1-cli-alpine
-```
+|name|7.1(fpm)|7.2(fpm)|7.4(fpm)|7.1(cli)|7.2(cli)|7.4(cli)|
+|:-----|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|yaf|3.3.5|3.3.5|3.3.5|3.3.5|3.3.5|3.3.5|
+|yac|2.3.1|2.3.1|2.3.1|2.3.1|2.3.1|2.3.1|
+|yaconf|1.1.2|1.1.2|1.1.2|1.1.2|1.1.2|1.1.2|
+|redis|5.3.7|5.3.7|5.3.7|5.3.7|5.3.7|5.3.7|
+|mongodb|1.11.1|1.13.0|1.13.0|1.11.1|1.13.0|1.13.0|
+|xdebug|2.9.8|3.1.5|3.1.5|2.9.8|3.1.5|3.1.5|
+|xlswriter|1.5.2|1.5.2|1.5.2|1.5.2|1.5.2|1.5.2|
+|event|3.0.8|3.0.8|3.0.8|3.0.8|3.0.8|3.0.8|
+|swoole|-|-|-|4.5.11|4.8.10|4.8.10|
