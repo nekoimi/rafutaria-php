@@ -23,6 +23,14 @@ ARG ENABLE_MIRRORS=off
 
 WORKDIR /workspace
 
+# Copy resources
+COPY docker-entrypoint.sh   /docker-entrypoint.sh
+COPY docker-entrypoint.d    /docker-entrypoint.d
+COPY nginx/nginx.conf       /etc/nginx/nginx.conf.tpl
+COPY nginx/default.conf     /etc/nginx/conf.d/default.conf
+COPY supervisor.d           /etc/supervisor.d
+COPY index.php              /workspace/public/index.php
+
 RUN set -x \
 # 切换国内源，可选项
     && if [ "$ENABLE_MIRRORS" = "on" ]; then \
@@ -174,24 +182,6 @@ RUN set -x \
         \
     && apk add --no-cache tzdata git supervisor \
     && mkdir -p /var/log/supervisor \
-        \
-    && apk add --no-cache --virtual .py-pip-deps py2-pip
-
-# Copy resources
-COPY docker-entrypoint.sh   /docker-entrypoint.sh
-COPY docker-entrypoint.d    /docker-entrypoint.d
-
-COPY nginx/nginx.conf       /etc/nginx/nginx.conf.tpl
-COPY nginx/default.conf     /etc/nginx/conf.d/default.conf
-
-COPY supervisor.d           /etc/supervisor.d
-
-COPY index.php              /workspace/public/index.php
-
-# Modify permission
-RUN set -x \
-    && pip install --no-cache-dir supervisor-stdout \
-    && apk del .py-pip-deps \
         \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R +x /docker-entrypoint.d \

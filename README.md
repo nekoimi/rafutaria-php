@@ -1,10 +1,14 @@
-# rafutaria-php
+# Rafutaria-php
 
+[![License](https://img.shields.io/badge/license-Apache-blue)](https://github.com/nekoimi/rafutaria-php)
+![php7.1](https://img.shields.io/badge/php-7.1-blue)
+![php7.2](https://img.shields.io/badge/php-7.2-blue)
+![php7.4](https://img.shields.io/badge/php-7.4-blue)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
 
 ![](rafutaria.png)
 
-A PHP FPM and Nginx running environment.
+一个PHP运行环境，集成常用扩展。
 
 ### Environment variable
 
@@ -24,8 +28,6 @@ A PHP FPM and Nginx running environment.
 |PHP_PM_MAX_REQUESTS|请求数累积到一定数量后，自动重启该进程|
 
 ### Used
-
-#### fpm
 
 - **php 7.1**
 

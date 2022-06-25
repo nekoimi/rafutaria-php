@@ -19,6 +19,12 @@ ARG ENABLE_MIRRORS=on
 
 WORKDIR /workspace
 
+# Copy resources
+COPY docker-entrypoint.sh                               /docker-entrypoint.sh
+COPY docker-entrypoint.d/00-cron-entrypoint.sh          /docker-entrypoint.d/00-cron-entrypoint.sh
+COPY docker-entrypoint.d/00-supervisor-entrypoint.sh    /docker-entrypoint.d/00-supervisor-entrypoint.sh
+COPY docker-entrypoint.d/00-php-entrypoint.sh           /docker-entrypoint.d/00-php-entrypoint.sh
+
 RUN set -x \
 # 切换国内源，可选项
     && if [ "$ENABLE_MIRRORS" = "on" ]; then \
@@ -79,21 +85,7 @@ RUN set -x \
         \
     && apk add --no-cache tzdata git supervisor \
     && mkdir -p /var/log/supervisor \
-        \
-    && apk add --no-cache --virtual .py-pip-deps py3-pip
-
-# Copy resources
-COPY docker-entrypoint.sh                               /docker-entrypoint.sh
-COPY docker-entrypoint.d/00-cron-entrypoint.sh          /docker-entrypoint.d/00-cron-entrypoint.sh
-COPY docker-entrypoint.d/00-supervisor-entrypoint.sh    /docker-entrypoint.d/00-supervisor-entrypoint.sh
-COPY docker-entrypoint.d/00-php-entrypoint.sh           /docker-entrypoint.d/00-php-entrypoint.sh
-
-COPY supervisor.d                                       /etc/supervisor.d/event-stdout.ini
-
-# Modify permission
-RUN set -x \
-    && pip install --no-cache-dir supervisor-stdout \
-    && apk del .py-pip-deps \
+    && mkdir -p /etc/supervisor.d \
         \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R +x /docker-entrypoint.d
