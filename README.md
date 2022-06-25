@@ -43,7 +43,7 @@ docker pull nekoimi/rafutaria-php:{version}-{mode}-alpine
 |:-----:|:-----:|:-----:|
 |7.1|**nekoimi/rafutaria-php:7.1-fpm-alpine**|**nekoimi/rafutaria-php:7.1-cli-alpine**|
 |7.2|**nekoimi/rafutaria-php:7.2-fpm-alpine**|**nekoimi/rafutaria-php:7.2-cli-alpine**|
-|7.3|**nekoimi/rafutaria-php:7.3-fpm-alpine**|**nekoimi/rafutaria-php:7.3-cli-alpine**|
+|7.4|**nekoimi/rafutaria-php:7.4-fpm-alpine**|**nekoimi/rafutaria-php:7.4-cli-alpine**|
 
 ### Ext
 
