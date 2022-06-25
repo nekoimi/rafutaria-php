@@ -1,19 +1,19 @@
 #
 # rafutaria-php
 #
-# alpine: 3.12
-# php: 7.2.34
-# nginx: 1.19.2
+# alpine: 3.16
+# php: 7.4.30
+# nginx: 1.21.6
 # user-group: 82 www-data
 #
-FROM php:7.2.34-fpm-alpine3.12
+FROM php:7.4.30-fpm-alpine3.16
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
 ENV TZ Asia/Shanghai
 
-ENV NGINX_VERSION 1.19.2
-ENV NJS_VERSION   0.4.3
+ENV NGINX_VERSION 1.21.6
+ENV NJS_VERSION   0.7.3
 ENV PKG_RELEASE   1
 ENV EXT_EVENT_VERSION   3.0.8
 ENV WORKSPACE     /workspace

@@ -3,7 +3,6 @@
 #
 # alpine: 3.10
 # php: 7.1.33
-# composer: 2.2.14
 # user-group: 82 www-data
 #
 FROM php:7.1.33-alpine3.10
