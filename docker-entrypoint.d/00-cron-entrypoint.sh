@@ -3,7 +3,7 @@ set -e
 
 PHP_CRONTAB_ENABLE=${CRONTAB_ENABLE:-"false"}
 
-exec_config_crontab() {
+_main() {
   ### crontab.conf
   if [ $PHP_CRONTAB_ENABLE == "true" ]; then
     if [ ! -f /etc/crontabs/root.bak ]; then
@@ -18,15 +18,11 @@ exec_config_crontab() {
 
       crond;
 
-      echo 'Cron start!'
+      echo 'Cron Start!'
     else
-      echo 'Cron file crontab.conf does not exists! Ignore.'
+      echo 'Cron Ignore!'
     fi
   fi
-}
-
-_main() {
-  exec_config_crontab
 }
 
 _main "$@"

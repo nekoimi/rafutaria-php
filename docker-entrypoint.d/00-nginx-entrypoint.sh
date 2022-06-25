@@ -24,14 +24,13 @@ _main() {
       fi
 
       # default.conf
-      if [ -f $WORKSPACE/deploy/nginx/default.conf ]; then
+      if [ -f $WORKSPACE/docker/nginx/default.conf ]; then
           if [ -f $NGX_CONF_DIR/default.conf ]; then
             rm -f $NGX_CONF_DIR/default.conf
           fi
-          cp -f $WORKSPACE/deploy/nginx/default.conf $NGX_CONF_DIR/default.conf
+          cp -f $WORKSPACE/docker/nginx/default.conf $NGX_CONF_DIR/default.conf
       fi
   fi
-
 }
 
 _main "$@"

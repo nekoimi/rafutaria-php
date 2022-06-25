@@ -1,26 +1,26 @@
 #
 # rafutaria-php
 #
-# alpine: 3.10
-# php: 7.1.33
-# nginx: 1.17.1
+# alpine: 3.12
+# php: 7.2.34
+# nginx: 1.19.2
 # composer: 2.2.14
 # user-group: 82 www-data
 #
-FROM php:7.1.33-fpm-alpine3.10
+FROM php:7.2.34-fpm-alpine3.12
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
 ENV TZ Asia/Shanghai
 
-ENV NGINX_VERSION       1.17.1
-ENV NJS_VERSION         0.3.3
-ENV PKG_RELEASE         1
+ENV NGINX_VERSION 1.19.2
+ENV NJS_VERSION   0.4.3
+ENV PKG_RELEASE   1
 ENV EXT_EVENT_VERSION   3.0.8
-ENV WORKSPACE           /workspace
+ENV WORKSPACE     /workspace
 
-ARG PECL_INSTALL="yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7 mongodb-1.11.1 xdebug-2.9.8 xlswriter-1.5.2"
-ARG ENABLE_MIRRORS=off
+ARG PECL_INSTALL="yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7 mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5"
+ARG ENABLE_MIRRORS=on
 
 WORKDIR /workspace
 
@@ -57,7 +57,7 @@ RUN set -x \
         libevent-dev \
         libmcrypt-dev \
         postgresql-dev \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql intl pcntl gd sockets mcrypt \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql intl pcntl gd sockets \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
@@ -176,7 +176,7 @@ RUN set -x \
     && apk add --no-cache tzdata git supervisor \
     && mkdir -p /var/log/supervisor \
         \
-    && apk add --no-cache --virtual .py-pip-deps py2-pip
+    && apk add --no-cache --virtual .py-pip-deps py3-pip
 
 # Copy resources
 COPY docker-entrypoint.sh   /docker-entrypoint.sh

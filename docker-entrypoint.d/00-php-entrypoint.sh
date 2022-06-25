@@ -80,6 +80,7 @@ exec_config_xdebug() {
     # xdebug2 和 xdebug3 的配置不同
     # 配置参考: https://xdebug.org/docs/all_settings
     XDEBUG_VERSION=$(php --ri xdebug | grep Version | awk -F '=>' '{print $2}' | awk -F . '{print $1}' | sed s/[[:space:]]//g)
+    echo "xdebug version: $XDEBUG_VERSION"
 
     if [ $XDEBUG_VERSION == "2" ]; then
       echo 'xdebug.remote_enable = On' >> $DOCKER_PHP_EXT_XDEBUG

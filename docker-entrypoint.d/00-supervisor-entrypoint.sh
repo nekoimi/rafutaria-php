@@ -4,11 +4,11 @@ set -e
 exec_config_supervisor() {
   # 后台守护进程配置
   ### /etc/supervisor.d
-if /usr/bin/find "$WORKSPACE/deploy/supervisor/" -mindepth 1 -maxdepth 1 -type f -print -quit 2>/dev/null | read v; then
-	echo "$0: $WORKSPACE/deploy/supervisor is not empty, will attempt to perform configuration"
+if /usr/bin/find "$WORKSPACE/docker/supervisor/" -mindepth 1 -maxdepth 1 -type f -print -quit 2>/dev/null | read v; then
+	echo "$0: $WORKSPACE/docker/supervisor is not empty, will attempt to perform configuration"
 
-	echo "$0: Looking for supervisor configs in $WORKSPACE/deploy/supervisor"
-	find "$WORKSPACE/deploy/supervisor/" -follow -type f -print | sort -V | while read -r f; do
+	echo "$0: Looking for supervisor configs in $WORKSPACE/docker/supervisor"
+	find "$WORKSPACE/docker/supervisor/" -follow -type f -print | sort -V | while read -r f; do
 		case "$f" in
 			*.ini)
 				if [ -f "$f" ]; then
@@ -25,7 +25,7 @@ if /usr/bin/find "$WORKSPACE/deploy/supervisor/" -mindepth 1 -maxdepth 1 -type f
 
 	echo "$0: Configuration complete!"
 else
-	echo "$0: No files found in $WORKSPACE/deploy/supervisor, skipping configuration"
+	echo "$0: No files found in $WORKSPACE/docker/supervisor, skipping configuration"
 fi
 }
 
