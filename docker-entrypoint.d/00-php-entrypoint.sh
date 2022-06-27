@@ -8,7 +8,7 @@ PHP_CONF_DIR="/usr/local/etc/php-fpm.d"
 PHP_APPLICATION_ENV=${APPLICATION_ENV:-"dev"}
 PHP_COMPOSER_INSTALL=${COMPOSER_INSTALL:-"false"}
 PHP_COMPOSER_UPDATE=${COMPOSER_UPDATE:-"false"}
-PHP_XDEBUG_ENABLE=${PHP_XDEBUG:-"off"}
+PHP_XDEBUG_ENABLE=${XDEBUG_ENABLE:-"false"}
 PHP_PROC_MANAGER_MODE=${PHP_PM_MODE:-"dynamic"}
 PHP_PROC_MAX_CHILDREN=${PHP_PM_MAX_CHILDREN:-"5"}
 PHP_PROC_START_SERVERS=${PHP_PM_START_SERVERS:-"2"}
@@ -70,7 +70,7 @@ exec_config_php_fpm() {
 exec_config_xdebug() {
   ### xdebug
   DOCKER_PHP_EXT_XDEBUG="$PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini"
-  if [ $PHP_XDEBUG_ENABLE == "on" ]; then
+  if [ $PHP_XDEBUG_ENABLE == "true" ]; then
     if [ -f $DOCKER_PHP_EXT_XDEBUG ]; then
       rm -f $DOCKER_PHP_EXT_XDEBUG
     fi
@@ -110,9 +110,9 @@ exec_config_composer() {
 
     if [ $PHP_COMPOSER_INSTALL == "true" ]; then
       if [ $PHP_APPLICATION_ENV == "production" ]; then
-        composer install --no-ansi --no-interaction --no-progress --working-dir=$WORKSPACE
-      else
         composer install --no-ansi --no-interaction --no-progress --no-dev --working-dir=$WORKSPACE
+      else
+        composer install --no-ansi --no-interaction --no-progress --working-dir=$WORKSPACE
       fi
     fi
 
