@@ -6,7 +6,7 @@ NGX_CONF_TPL_FILE="/etc/nginx/nginx.conf.tpl"
 NGX_CONF_DIR="/etc/nginx/conf.d"
 
 # env
-NGX_WORKER_PROC=${NGX_WORKER_PROC:-"1"}
+NGX_WORKER_PROC_CONF=${NGX_WORKER_PROC:-"1"}
 
 _main() {
   if [ -f /usr/sbin/nginx ]; then
@@ -20,7 +20,7 @@ _main() {
       fi
 
       if [ -f $NGX_CONF_FILE ]; then
-        sed -i "s/NGX_WORKER_PROC/$NGX_WORKER_PROC/g" $NGX_CONF_FILE
+        sed -i "s/NGX_WORKER_PROC/$NGX_WORKER_PROC_CONF/g" $NGX_CONF_FILE
       fi
 
       # default.conf
