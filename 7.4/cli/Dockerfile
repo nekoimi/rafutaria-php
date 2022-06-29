@@ -52,15 +52,23 @@ RUN set -x \
         autoconf \
         libc-dev \
         icu-dev \
-        libjpeg \
-        curl-dev \
+            \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libpng \
         libpng-dev \
-        openssl-dev \
+        jpeg-dev \
+        libjpeg \
         libwebp-dev \
+        libzip-dev \
+        zlib-dev \
+        libxpm-dev \
+            \
+        openssl-dev \
         libevent-dev \
         libmcrypt-dev \
         postgresql-dev \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql intl pcntl gd sockets \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl gd sockets zip \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
@@ -71,14 +79,22 @@ RUN set -x \
             && docker-php-ext-enable $extn \
             && php --ri $extn ; \
         done \
-        # swoole
-        && printf "yes\nyes\nyes\nyes\nyes\nyes\n\n" | pecl install http://pecl.php.net/get/swoole-$EXT_SWOOLE_VERSION \
-        && docker-php-ext-enable swoole \
-        # event 需要单独安装, 加载顺序滞后
-        && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
-        && docker-php-ext-enable --ini-name zz-event.ini event \
-        && pecl clear-cache || echo 'pecl no cache to clean up' ; \
     fi \
+# ext gd
+    && docker-php-ext-configure gd --with-webp-dir=/usr/include/ \
+        --with-freetype-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/ \
+        --with-png-dir=/usr/include/ \
+        --with-xpm-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd \
+# swoole
+    && printf "yes\nyes\nyes\nyes\nyes\nyes\n\n" | pecl install http://pecl.php.net/get/swoole-$EXT_SWOOLE_VERSION \
+    && docker-php-ext-enable swoole \
+# event 需要单独安装, 加载顺序滞后
+    && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
+    && docker-php-ext-enable --ini-name zz-event.ini event \
+    && pecl clear-cache || echo 'pecl no cache to clean up' ; \
+# remove ext build deps
     && apk del .build-php-ext-deps \
     && rm -rf "$tempDir" \
     && rm -rf /tmp/pear \
