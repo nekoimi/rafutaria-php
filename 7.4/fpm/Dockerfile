@@ -95,7 +95,7 @@ RUN set -x \
 # event 需要单独安装, 加载顺序滞后
     && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
-    && pecl clear-cache || echo 'pecl no cache to clean up' ; \
+    && pecl clear-cache || echo 'pecl no cache to clean up' \
 # remove ext build deps
     && apk del .build-php-ext-deps \
     && rm -rf "$tempDir" \
