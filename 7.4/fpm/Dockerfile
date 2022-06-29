@@ -180,6 +180,9 @@ RUN set -x \
     && apk del .gettext \
     && mv /tmp/envsubst /usr/local/bin/ \
         \
+# install su-exec
+    && apk add --no-cache su-exec \
+        \
     && apk add --no-cache tzdata git supervisor \
     && mkdir -p /var/log/supervisor \
         \

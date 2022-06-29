@@ -82,6 +82,9 @@ RUN set -x \
     && rm -rf "$tempDir" \
     && rm -rf /tmp/pear \
         \
+# install su-exec
+    && apk add --no-cache su-exec \
+        \
 # install tools
     && apk add --no-cache tzdata git supervisor \
     && mkdir -p /var/log/supervisor \
