@@ -50,7 +50,7 @@ RUN set -x \
 # install extension
     && pecl config-set preferred_state stable \
 #    && pecl config-set cache_dir $tempDir \
-    && apk add --no-cache icu-libs libpq libpng libevent libmcrypt \
+    && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
     && apk add --no-cache --virtual .build-php-ext-deps \
         gcc \
         g++ \
