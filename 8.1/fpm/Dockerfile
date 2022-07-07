@@ -2,11 +2,11 @@
 # rafutaria-php
 #
 # alpine: 3.16
-# php: 8.0.20
+# php: 8.1.7
 # nginx: 1.21.6
 # user-group: 82 www-data
 #
-FROM php:8.0.20-fpm-alpine3.16
+FROM php:8.1.7-fpm-alpine3.16
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
