@@ -19,7 +19,7 @@ ENV EXT_EVENT_VERSION   3.0.8
 ENV WORKSPACE     /workspace
 
 ARG PECL_INSTALL="yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7 mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5"
-ARG ENABLE_MIRRORS=on
+ARG ENABLE_MIRRORS=off
 
 WORKDIR /workspace
 
