@@ -4,6 +4,7 @@
 [![php7.1](https://img.shields.io/badge/php-7.1-blue)](https://github.com/nekoimi/rafutaria-php)
 [![php7.2](https://img.shields.io/badge/php-7.2-blue)](https://github.com/nekoimi/rafutaria-php)
 [![php7.4](https://img.shields.io/badge/php-7.4-blue)](https://github.com/nekoimi/rafutaria-php)
+[![php8.0](https://img.shields.io/badge/php-8.0-blue)](https://github.com/nekoimi/rafutaria-php)
 [![Docker Pulls](https://img.shields.io/docker/pulls/nekoimi/rafutaria-php)](https://hub.docker.com/r/nekoimi/rafutaria-php)
 
 ![](rafutaria.png)
@@ -44,17 +45,4 @@ docker pull nekoimi/rafutaria-php:{version}-{mode}-alpine
 |7.1|**nekoimi/rafutaria-php:7.1-fpm-alpine**|**nekoimi/rafutaria-php:7.1-cli-alpine**|
 |7.2|**nekoimi/rafutaria-php:7.2-fpm-alpine**|**nekoimi/rafutaria-php:7.2-cli-alpine**|
 |7.4|**nekoimi/rafutaria-php:7.4-fpm-alpine**|**nekoimi/rafutaria-php:7.4-cli-alpine**|
-
-### Ext
-
-|name|7.1(fpm)|7.2(fpm)|7.4(fpm)|7.1(cli)|7.2(cli)|7.4(cli)|
-|:-----|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-|yaf|3.3.5|3.3.5|3.3.5|3.3.5|3.3.5|3.3.5|
-|yac|2.3.1|2.3.1|2.3.1|2.3.1|2.3.1|2.3.1|
-|yaconf|1.1.2|1.1.2|1.1.2|1.1.2|1.1.2|1.1.2|
-|redis|5.3.7|5.3.7|5.3.7|5.3.7|5.3.7|5.3.7|
-|mongodb|1.11.1|1.13.0|1.13.0|1.11.1|1.13.0|1.13.0|
-|xdebug|2.9.8|3.1.5|3.1.5|2.9.8|3.1.5|3.1.5|
-|xlswriter|1.5.2|1.5.2|1.5.2|1.5.2|1.5.2|1.5.2|
-|event|3.0.8|3.0.8|3.0.8|3.0.8|3.0.8|3.0.8|
-|swoole|-|-|-|4.5.11|4.8.10|4.8.10|
+|8.0|**nekoimi/rafutaria-php:8.0-fpm-alpine**|**nekoimi/rafutaria-php:8.0-cli-alpine**|

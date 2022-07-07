@@ -32,7 +32,7 @@ jobs:
 
     strategy:
       matrix:
-        version: [7.1, 7.2, 7.4]
+        version: [7.1, 7.2, 7.4, 8.0]
         mode: [fpm, cli]
 
     steps:
