@@ -82,6 +82,8 @@ RUN set -x \
             && php --ri $extn ; \
         done \
     fi \
+    && apk add --no-cache --virtual .zip-runtime-deps libzip \
+    && apk add --no-cache --virtual .mongodb-runtime-deps zstd \
 # ext gd
     && docker-php-ext-configure gd --with-webp-dir=/usr/include/ \
         --with-freetype-dir=/usr/include/ \
