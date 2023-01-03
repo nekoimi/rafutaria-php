@@ -1,6 +1,10 @@
 #!groovy
 
 node {
+    stage('CleanWs') {
+        cleanWs()
+    }
+
     stage('Checkout') {
         checkout scm
     }
