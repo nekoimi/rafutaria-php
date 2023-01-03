@@ -50,6 +50,7 @@ RUN set -x \
 # install extension
     && pecl config-set preferred_state stable \
 #    && pecl config-set cache_dir $tempDir \
+    && apk update \
     && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
     && apk add --no-cache --virtual .build-php-ext-deps \
         gcc \
@@ -80,11 +81,8 @@ RUN set -x \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
             echo "pecl install extension => $ext ..." \
-            && pecl install http://pecl.php.net/get/$ext \
-            || exit 1; \
-            extn=$(echo $ext | awk -F - '{print $1}') \
-            && docker-php-ext-enable $extn \
-            && php --ri $extn ; \
+            && pecl install $ext \
+            && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
         done \
     fi \
     && apk add --no-cache --virtual .zip-runtime-deps libzip \
@@ -101,7 +99,7 @@ RUN set -x \
     && docker-php-ext-enable imagick \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
 # event 需要单独安装, 加载顺序滞后
-    && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
+    && pecl install event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache || echo 'pecl no cache to clean up' \
 # remove ext build deps
