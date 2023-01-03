@@ -32,18 +32,9 @@ COPY supervisor.d           /etc/supervisor.d
 COPY index.php              /workspace/public/index.php
 
 RUN set -ex \
-    && apkArch="$(cat /etc/apk/arch)" \
-    && tempDir="$(mktemp -d)" \
-    && chown nobody:nobody $tempDir \
-    && cd $tempDir \
-# 切换国内源，可选项
-    && if [ "$ENABLE_MIRRORS" = "on" ]; then \
-        sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories; \
-    fi \
-# install extension
+    && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk update \
+# install php extension
     && pecl config-set preferred_state stable \
-#    && pecl config-set cache_dir $tempDir \
-    && apk update \
     && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
     && apk add --no-cache --virtual .build-deps \
         gcc \
@@ -82,32 +73,32 @@ RUN set -ex \
         bash \
         alpine-sdk \
         findutils \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
-    && docker-php-ext-enable opcache \
-    && if [ ! -z "$PECL_INSTALL" ]; then \
-        for ext in $PECL_INSTALL; do \
-            pecl install $ext && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
-        done \
-    fi \
     && apk add --no-cache --virtual .zip-runtime-deps libzip \
     && apk add --no-cache --virtual .mongodb-runtime-deps zstd \
-# ext gd
-    && docker-php-ext-configure gd --with-webp-dir=/usr/include/ \
-        --with-freetype-dir=/usr/include/ \
-        --with-jpeg-dir=/usr/include/ \
-        --with-png-dir=/usr/include/ \
-        --with-xpm-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-enable gd \
-# ext imagick
+    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
+    && docker-php-ext-enable opcache \
+    for ext in $PECL_INSTALL; do \
+        pecl install $ext  \
+      && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
+    done \
+    \
+    # ext imagick
     && pecl install imagick \
     && docker-php-ext-enable imagick \
-    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
-# event 需要单独安装, 加载顺序滞后
+    # event 需要单独安装, 加载顺序滞后
     && pecl install event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache || echo 'pecl no cache to clean up' \
       \
+# install composer
+    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+    && php composer-setup.php \
+    && mv composer.phar /usr/local/bin/composer \
+    && chmod +x /usr/local/bin/composer \
+    && composer -V \
+        \
 # install nginx
 # ============ nginx module ============
 # nginx-module-geoip=${NGINX_VERSION}-r${PKG_RELEASE}
@@ -116,6 +107,10 @@ RUN set -ex \
 # nginx-module-xslt=${NGINX_VERSION}-r${PKG_RELEASE}
 # ============ nginx module ============ \
       \
+    && apkArch="$(cat /etc/apk/arch)" \
+    && tempDir="$(mktemp -d)" \
+    && chown nobody:nobody $tempDir \
+    && cd $tempDir \
     && nginxPackages=" \
         nginx=${NGINX_VERSION}-r${PKG_RELEASE} \
     " \
@@ -182,13 +177,6 @@ RUN set -ex \
     && apk del .gettext \
     && mv /tmp/envsubst /usr/local/bin/ \
         \
-# install composer
-    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-    && php composer-setup.php \
-    && mv composer.phar /usr/local/bin/composer \
-    && chmod +x /usr/local/bin/composer \
-    && composer -V \
 # remove build deps
     && apk del .build-deps \
     && rm -rf "$tempDir" \
