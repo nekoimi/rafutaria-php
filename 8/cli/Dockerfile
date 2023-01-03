@@ -68,7 +68,9 @@ RUN set -x \
         libevent-dev \
         libmcrypt-dev \
         postgresql-dev \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl gd sockets zip \
+        imagemagick-dev \
+        libtool \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl gd sockets zip bcmath \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
@@ -90,6 +92,10 @@ RUN set -x \
 # swoole
     && printf "yes\nyes\nyes\nyes\nyes\nyes\n\n" | pecl install http://pecl.php.net/get/swoole-$EXT_SWOOLE_VERSION \
     && docker-php-ext-enable swoole \
+# ext imagick
+    && printf " \n\n" | pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
 # event 需要单独安装, 加载顺序滞后
     && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
@@ -107,7 +113,8 @@ RUN set -x \
     && mkdir -p /etc/supervisor.d \
         \
     && chmod +x /docker-entrypoint.sh \
-    && chmod -R +x /docker-entrypoint.d
+    && chmod -R +x /docker-entrypoint.d \
+    && php -m
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 

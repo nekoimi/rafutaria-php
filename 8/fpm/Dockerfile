@@ -73,7 +73,9 @@ RUN set -x \
         libevent-dev \
         libmcrypt-dev \
         postgresql-dev \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip \
+        imagemagick-dev \
+        libtool \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
@@ -92,6 +94,10 @@ RUN set -x \
         --with-png-dir=/usr/include/ \
         --with-xpm-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd \
+# ext imagick
+    && printf " \n\n" | pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
 # event 需要单独安装, 加载顺序滞后
     && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
@@ -208,7 +214,8 @@ RUN set -x \
         \
     && mkdir -p /var/log/nginx \
     && chown -R www-data:www-data /var/log/nginx \
-    && chown -R www-data:www-data /workspace
+    && chown -R www-data:www-data /workspace \
+    && php -m
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
