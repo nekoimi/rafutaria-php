@@ -92,10 +92,12 @@ RUN set -x \
         --with-xpm-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd \
 # swoole
-    && printf "yes\nyes\nyes\nyes\nyes\nyes\n\n" | pecl install http://pecl.php.net/get/swoole-$EXT_SWOOLE_VERSION \
+    && \
+      printf "yes\nyes\nyes\nyes\nyes\nyes\n\n"  \
+      | pecl install https://pecl.php.net/get/swoole-$EXT_SWOOLE_VERSION \
     && docker-php-ext-enable swoole \
 # ext imagick
-    && printf " \n\n" | pecl install imagick \
+    && pecl install imagick \
     && docker-php-ext-enable imagick \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
 # event 需要单独安装, 加载顺序滞后

@@ -97,7 +97,7 @@ RUN set -x \
         --with-xpm-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd \
 # ext imagick
-    && printf " \n\n" | pecl install imagick \
+    && pecl install imagick \
     && docker-php-ext-enable imagick \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
 # event 需要单独安装, 加载顺序滞后
