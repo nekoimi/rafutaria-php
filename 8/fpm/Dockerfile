@@ -31,7 +31,7 @@ COPY nginx/default.conf     /etc/nginx/conf.d/default.conf
 COPY supervisor.d           /etc/supervisor.d
 COPY index.php              /workspace/public/index.php
 
-RUN set -x \
+RUN set -ex \
     && apkArch="$(cat /etc/apk/arch)" \
     && tempDir="$(mktemp -d)" \
     && chown nobody:nobody $tempDir \
@@ -122,7 +122,6 @@ RUN set -x \
     && case "$apkArch" in \
         x86_64) \
 # arches officially built by upstream
-            set -x \
             && KEY_SHA512="e7fa8303923d9b95db37a77ad46c68fd4755ff935d0a534d26eba83de193c76166c68bfe7f65471bf8881004ef4aa6df3e34689c305662750c0172fca5d8552a *stdin" \
             && apk add --no-cache --virtual .cert-deps \
                 openssl \
@@ -157,7 +156,6 @@ RUN set -x \
                 " \
             && echo "${tempDir}/packages/alpine/" >> /etc/apk/repositories \
             && cp ${tempDir}/.abuild/abuild-key.rsa.pub /etc/apk/keys/ \
-            && apk del .build-deps \
             ;; \
     esac \
     && apk add --no-cache $nginxPackages \
