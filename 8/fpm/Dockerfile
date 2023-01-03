@@ -27,6 +27,24 @@ COPY index.php              /workspace/public/index.php
 RUN set -ex \
     && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
     && apk update \
+# install nginx \
+    && apk add --no-cache nginx \
+        \
+# install composer
+    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+    && php composer-setup.php \
+    && mv composer.phar /usr/local/bin/composer \
+    && chmod +x /usr/local/bin/composer \
+    && composer -V \
+        \
+# install su-exec
+    && apk add --no-cache su-exec \
+        \
+# install tools
+    && apk add --no-cache tzdata git supervisor \
+    && mkdir -p /var/log/supervisor \
+        \
 # install php extension
     && pecl config-set preferred_state stable \
     && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
@@ -72,10 +90,6 @@ RUN set -ex \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
-#    for ext in $PECL_INSTALL; do \
-#      pecl install $ext \
-#      && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
-#    done \
 # yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7  \
 # mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5 \
       \
@@ -98,25 +112,9 @@ RUN set -ex \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache \
       \
-# install composer
-    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-    && php composer-setup.php \
-    && mv composer.phar /usr/local/bin/composer \
-    && chmod +x /usr/local/bin/composer \
-    && composer -V \
-        \
-# install nginx \
-    && apk add --no-cache nginx \
-      \
 # remove build deps
     && apk del .build-deps \
     && rm -rf /tmp/pear \
-# install su-exec
-    && apk add --no-cache su-exec \
-        \
-    && apk add --no-cache tzdata git supervisor \
-    && mkdir -p /var/log/supervisor \
         \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R +x /docker-entrypoint.d \
