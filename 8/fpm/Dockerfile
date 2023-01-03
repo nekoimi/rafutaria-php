@@ -86,12 +86,6 @@ RUN set -ex \
 # yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7  \
 # mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5 \
       \
-    && pecl install yaf \
-    && docker-php-ext-enable yaf \
-    && pecl install yac \
-    && docker-php-ext-enable yac \
-    && pecl install yaconf \
-    && docker-php-ext-enable yaconf \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && pecl install mongodb \
@@ -109,7 +103,7 @@ RUN set -ex \
     # event 需要单独安装, 加载顺序滞后
     && pecl install event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
-    && pecl clear-cache || echo 'pecl no cache to clean up' \
+    && pecl clear-cache \
       \
 # install composer
     && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -119,87 +113,11 @@ RUN set -ex \
     && chmod +x /usr/local/bin/composer \
     && composer -V \
         \
-# install nginx
-# ============ nginx module ============
-# nginx-module-geoip=${NGINX_VERSION}-r${PKG_RELEASE}
-# nginx-module-njs=${NGINX_VERSION}.${NJS_VERSION}-r${PKG_RELEASE}
-# nginx-module-image-filter=${NGINX_VERSION}-r${PKG_RELEASE}
-# nginx-module-xslt=${NGINX_VERSION}-r${PKG_RELEASE}
-# ============ nginx module ============ \
+# install nginx \
+    && apk add --no-cache nginx \
       \
-    && apkArch="$(cat /etc/apk/arch)" \
-    && tempDir="$(mktemp -d)" \
-    && chown nobody:nobody $tempDir \
-    && cd $tempDir \
-    && nginxPackages=" \
-        nginx=${NGINX_VERSION}-r${PKG_RELEASE} \
-    " \
-    && case "$apkArch" in \
-        x86_64) \
-# arches officially built by upstream
-            && KEY_SHA512="e7fa8303923d9b95db37a77ad46c68fd4755ff935d0a534d26eba83de193c76166c68bfe7f65471bf8881004ef4aa6df3e34689c305662750c0172fca5d8552a *stdin" \
-            && apk add --no-cache --virtual .cert-deps \
-                openssl \
-            && wget -O /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
-            && if [ "$(openssl rsa -pubin -in /tmp/nginx_signing.rsa.pub -text -noout | openssl sha512 -r)" = "$KEY_SHA512" ]; then \
-                echo "key verification succeeded!"; \
-                mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/; \
-            else \
-                echo "key verification failed!"; \
-                exit 1; \
-            fi \
-            && printf "%s%s%s\n" \
-                "https://nginx.org/packages/mainline/alpine/v" \
-                `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
-                "/main" \
-            | tee -a /etc/apk/repositories \
-            && apk del .cert-deps \
-            ;; \
-        *) \
-# we're on an architecture upstream doesn't officially build for
-# let's build binaries from the published packaging sources
-            && su nobody -s /bin/sh -c " \
-                export HOME=${tempDir} \
-                && cd ${tempDir} \
-                && hg clone https://hg.nginx.org/pkg-oss \
-                && cd pkg-oss \
-                && hg up ${NGINX_VERSION}-${PKG_RELEASE} \
-                && cd alpine \
-                && make all \
-                && apk index -o ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz ${tempDir}/packages/alpine/${apkArch}/*.apk \
-                && abuild-sign -k ${tempDir}/.abuild/abuild-key.rsa ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz \
-                " \
-            && echo "${tempDir}/packages/alpine/" >> /etc/apk/repositories \
-            && cp ${tempDir}/.abuild/abuild-key.rsa.pub /etc/apk/keys/ \
-            ;; \
-    esac \
-    && apk add --no-cache $nginxPackages \
-# if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
-    && if [ -n "/etc/apk/keys/abuild-key.rsa.pub" ]; then rm -f /etc/apk/keys/abuild-key.rsa.pub; fi \
-    && if [ -n "/etc/apk/keys/nginx_signing.rsa.pub" ]; then rm -f /etc/apk/keys/nginx_signing.rsa.pub; fi \
-# remove the last line with the packages repos in the repositories file
-    && sed -i '$ d' /etc/apk/repositories \
-# Bring in gettext so we can get `envsubst`, then throw
-# the rest away. To do this, we need to install `gettext`
-# then move `envsubst` out of the way so `gettext` can
-# be deleted completely, then move `envsubst` back.
-    && apk add --no-cache --virtual .gettext gettext \
-    && mv /usr/bin/envsubst /tmp/ \
-        \
-    && runDeps="$( \
-        scanelf --needed --nobanner /tmp/envsubst \
-            | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-            | sort -u \
-            | xargs -r apk info --installed \
-            | sort -u \
-    )" \
-    && apk add --no-cache $runDeps \
-    && apk del .gettext \
-    && mv /tmp/envsubst /usr/local/bin/ \
-        \
 # remove build deps
     && apk del .build-deps \
-    && rm -rf "$tempDir" \
     && rm -rf /tmp/pear \
 # install su-exec
     && apk add --no-cache su-exec \
