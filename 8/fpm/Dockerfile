@@ -12,14 +12,7 @@ LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
 ENV TZ Asia/Shanghai
 
-ENV NGINX_VERSION 1.21.6
-ENV NJS_VERSION   0.7.3
-ENV PKG_RELEASE   1
-ENV EXT_EVENT_VERSION   3.0.8
 ENV WORKSPACE     /workspace
-
-ARG PECL_INSTALL="yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7 mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5"
-ARG ENABLE_MIRRORS=off
 
 WORKDIR /workspace
 
@@ -101,7 +94,7 @@ RUN set -ex \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
     # event 需要单独安装, 加载顺序滞后
-    && pecl install event-$EXT_EVENT_VERSION \
+    && pecl install event \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache \
       \
