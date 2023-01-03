@@ -32,27 +32,20 @@ COPY supervisor.d           /etc/supervisor.d
 COPY index.php              /workspace/public/index.php
 
 RUN set -x \
+    && apkArch="$(cat /etc/apk/arch)" \
+    && tempDir="$(mktemp -d)" \
+    && chown nobody:nobody $tempDir \
+    && cd $tempDir \
 # 切换国内源，可选项
     && if [ "$ENABLE_MIRRORS" = "on" ]; then \
         sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories; \
     fi \
-# install composer
-    && php -v \
-    && tempDir="$(mktemp -d)" \
-    && chown nobody:nobody $tempDir \
-    && cd $tempDir \
-    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-    && php composer-setup.php \
-    && mv composer.phar /usr/local/bin/composer \
-    && chmod +x /usr/local/bin/composer \
-    && composer -V \
 # install extension
     && pecl config-set preferred_state stable \
 #    && pecl config-set cache_dir $tempDir \
     && apk update \
     && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
-    && apk add --no-cache --virtual .build-php-ext-deps \
+    && apk add --no-cache --virtual .build-deps \
         gcc \
         g++ \
         make \
@@ -76,13 +69,24 @@ RUN set -x \
         postgresql-dev \
         imagemagick-dev \
         libtool \
+          \
+        openssl-dev \
+        pcre-dev \
+        linux-headers \
+        libxslt-dev \
+        gd-dev \
+        geoip-dev \
+        perl-dev \
+        libedit-dev \
+        mercurial \
+        bash \
+        alpine-sdk \
+        findutils \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
-            echo "pecl install extension => $ext ..." \
-            && pecl install $ext \
-            && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
+            pecl install $ext && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
         done \
     fi \
     && apk add --no-cache --virtual .zip-runtime-deps libzip \
@@ -94,6 +98,7 @@ RUN set -x \
         --with-png-dir=/usr/include/ \
         --with-xpm-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-enable gd \
 # ext imagick
     && pecl install imagick \
     && docker-php-ext-enable imagick \
@@ -102,18 +107,15 @@ RUN set -x \
     && pecl install event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache || echo 'pecl no cache to clean up' \
-# remove ext build deps
-    && apk del .build-php-ext-deps \
-    && rm -rf "$tempDir" \
-    && rm -rf /tmp/pear \
+      \
 # install nginx
-    && apkArch="$(cat /etc/apk/arch)" \
 # ============ nginx module ============
 # nginx-module-geoip=${NGINX_VERSION}-r${PKG_RELEASE}
 # nginx-module-njs=${NGINX_VERSION}.${NJS_VERSION}-r${PKG_RELEASE}
 # nginx-module-image-filter=${NGINX_VERSION}-r${PKG_RELEASE}
 # nginx-module-xslt=${NGINX_VERSION}-r${PKG_RELEASE}
-# ============ nginx module ============
+# ============ nginx module ============ \
+      \
     && nginxPackages=" \
         nginx=${NGINX_VERSION}-r${PKG_RELEASE} \
     " \
@@ -142,26 +144,6 @@ RUN set -x \
         *) \
 # we're on an architecture upstream doesn't officially build for
 # let's build binaries from the published packaging sources
-            set -x \
-            && tempDir="$(mktemp -d)" \
-            && chown nobody:nobody $tempDir \
-            && apk add --no-cache --virtual .build-deps \
-                gcc \
-                libc-dev \
-                make \
-                openssl-dev \
-                pcre-dev \
-                zlib-dev \
-                linux-headers \
-                libxslt-dev \
-                gd-dev \
-                geoip-dev \
-                perl-dev \
-                libedit-dev \
-                mercurial \
-                bash \
-                alpine-sdk \
-                findutils \
             && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
@@ -180,7 +162,6 @@ RUN set -x \
     esac \
     && apk add --no-cache $nginxPackages \
 # if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
-    && if [ -n "$tempDir" ]; then rm -rf "$tempDir"; fi \
     && if [ -n "/etc/apk/keys/abuild-key.rsa.pub" ]; then rm -f /etc/apk/keys/abuild-key.rsa.pub; fi \
     && if [ -n "/etc/apk/keys/nginx_signing.rsa.pub" ]; then rm -f /etc/apk/keys/nginx_signing.rsa.pub; fi \
 # remove the last line with the packages repos in the repositories file
@@ -203,6 +184,17 @@ RUN set -x \
     && apk del .gettext \
     && mv /tmp/envsubst /usr/local/bin/ \
         \
+# install composer
+    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+    && php composer-setup.php \
+    && mv composer.phar /usr/local/bin/composer \
+    && chmod +x /usr/local/bin/composer \
+    && composer -V \
+# remove build deps
+    && apk del .build-deps \
+    && rm -rf "$tempDir" \
+    && rm -rf /tmp/pear \
 # install su-exec
     && apk add --no-cache su-exec \
         \
@@ -213,9 +205,7 @@ RUN set -x \
     && chmod -R +x /docker-entrypoint.d \
         \
     && mkdir -p /var/log/nginx \
-    && chown -R www-data:www-data /var/log/nginx \
-    && chown -R www-data:www-data /workspace \
-    && php -m
+    && chown -R www-data:www-data /var/log/nginx
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
