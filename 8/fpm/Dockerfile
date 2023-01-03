@@ -78,7 +78,8 @@ RUN set -ex \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
-    for ext in $PECL_INSTALL; do \
+    for ext in $PECL_INSTALL; \
+    do \
         pecl install $ext  \
       && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
     done \
