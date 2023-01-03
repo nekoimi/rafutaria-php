@@ -25,7 +25,7 @@ COPY supervisor.d           /etc/supervisor.d
 COPY index.php              /workspace/public/index.php
 
 RUN set -ex \
-    && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+#   && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
     && apk update \
 # install nginx \
     && apk add --no-cache nginx \
@@ -87,7 +87,7 @@ RUN set -ex \
         findutils \
     && apk add --no-cache --virtual .zip-runtime-deps libzip \
     && apk add --no-cache --virtual .mongodb-runtime-deps zstd \
-    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
+    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick libgomp \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
 # yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7  \
