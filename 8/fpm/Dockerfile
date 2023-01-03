@@ -32,7 +32,8 @@ COPY supervisor.d           /etc/supervisor.d
 COPY index.php              /workspace/public/index.php
 
 RUN set -ex \
-    && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk update \
+    && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk update \
 # install php extension
     && pecl config-set preferred_state stable \
     && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
