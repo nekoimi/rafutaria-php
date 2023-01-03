@@ -78,12 +78,22 @@ RUN set -ex \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
-    for ext in $PECL_INSTALL; \
-    do \
-        pecl install $ext  \
-      && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
-    done \
-    \
+#    for ext in $PECL_INSTALL; do \
+#      pecl install $ext \
+#      && docker-php-ext-enable $(echo $ext | awk -F - '{print $1}') \
+#    done \
+# yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7  \
+# mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5 \
+      \
+    && pecl install yaf && docker-php-ext-enable yaf \
+    && pecl install yac && docker-php-ext-enable yac \
+    && pecl install yaconf && docker-php-ext-enable yaconf \
+    && pecl install redis && docker-php-ext-enable redis \
+    && pecl install mongodb && docker-php-ext-enable mongodb \
+    && pecl install xdebug && docker-php-ext-enable xdebug \
+    && pecl install xlswriter && docker-php-ext-enable xlswriter \
+    && pecl install mcrypt && docker-php-ext-enable mcrypt \
+      \
     # ext imagick
     && pecl install imagick \
     && docker-php-ext-enable imagick \
