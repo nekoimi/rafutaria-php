@@ -9,6 +9,8 @@ PHP_APPLICATION_ENV=${APPLICATION_ENV:-"dev"}
 PHP_COMPOSER_INSTALL=${COMPOSER_INSTALL:-"false"}
 PHP_COMPOSER_UPDATE=${COMPOSER_UPDATE:-"false"}
 PHP_XDEBUG_ENABLE=${XDEBUG_ENABLE:-"false"}
+PHP_INI_MEMORY=${MEMORY_LIMIT:-"256M"}
+PHP_INI_UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-"50M"}
 PHP_PROC_MANAGER_MODE=${PHP_PM_MODE:-"dynamic"}
 PHP_PROC_MAX_CHILDREN=${PHP_PM_MAX_CHILDREN:-"5"}
 PHP_PROC_START_SERVERS=${PHP_PM_START_SERVERS:-"2"}
@@ -25,11 +27,11 @@ exec_config_php_ini() {
     fi
     cp -f $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
     # config resource
-    sed -i 's/max_execution_time = 60/max_execution_time = 60/g' $PHP_INI_DIR/php.ini
-    sed -i 's/memory_limit = 128M/memory_limit = 128M/g' $PHP_INI_DIR/php.ini
-    sed -i 's/post_max_size = 8M/post_max_size = 10M/g' $PHP_INI_DIR/php.ini
-    sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 10M/g' $PHP_INI_DIR/php.ini
-    sed -i 's/max_file_uploads = 20/max_file_uploads = 1/g' $PHP_INI_DIR/php.ini
+    sed -i "s/max_execution_time = 60/max_execution_time = 60/g" $PHP_INI_DIR/php.ini
+    sed -i "s/memory_limit = 128M/memory_limit = $PHP_INI_MEMORY/g" $PHP_INI_DIR/php.ini
+    sed -i "s/post_max_size = 8M/post_max_size = $PHP_INI_UPLOAD_MAX_SIZE/g" $PHP_INI_DIR/php.ini
+    sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHP_INI_UPLOAD_MAX_SIZE/g" $PHP_INI_DIR/php.ini
+    sed -i "s/max_file_uploads = 20/max_file_uploads = 10/g" $PHP_INI_DIR/php.ini
     # config opcache
     sed -i 's/;opcache.enable=1/opcache.enable=1/g' $PHP_INI_DIR/php.ini
     sed -i 's/;opcache.memory_consumption=128/opcache.memory_consumption=128/g' $PHP_INI_DIR/php.ini
@@ -52,6 +54,9 @@ exec_config_php_fpm() {
     fi
     cp -f $PHP_CONF_DIR/www.conf.default $PHP_CONF_DIR/www.conf
 
+    sed -i "s/;listen.owner = www-data/listen.owner = www-data/g" $PHP_CONF_DIR/www.conf
+    sed -i "s/;listen.group = www-data/listen.group = www-data/g" $PHP_CONF_DIR/www.conf
+    sed -i "s/;listen.mode = 0660/listen.mode = 0660/g" $PHP_CONF_DIR/www.conf
     # 进程管理模式
     sed -i "s/pm = dynamic/pm = $PHP_PROC_MANAGER_MODE/g" $PHP_CONF_DIR/www.conf
     # 静态方式下开启的php-fpm进程数量

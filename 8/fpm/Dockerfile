@@ -1,18 +1,15 @@
 #
 # rafutaria-php
 #
-# alpine: 3.16
-# php: 8.1.7
-# nginx: 1.21.6
+# php
+# nginx
 # user-group: 82 www-data
 #
-FROM php:8.1.7-fpm-alpine3.16
+FROM php:8.2.1-fpm-alpine3.17
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
 ENV TZ Asia/Shanghai
-
-ENV WORKSPACE     /workspace
 
 WORKDIR /workspace
 
@@ -37,6 +34,7 @@ RUN set -ex \
     && mv composer.phar /usr/local/bin/composer \
     && chmod +x /usr/local/bin/composer \
     && composer -V \
+    && rm -f composer-setup.php \
         \
 # install su-exec
     && apk add --no-cache su-exec \
@@ -90,29 +88,37 @@ RUN set -ex \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick libgomp \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
-# yaf-3.3.5 yac-2.3.1 yaconf-1.1.2 redis-5.3.7  \
-# mongodb-1.13.0 xdebug-3.1.5 xlswriter-1.5.2 mcrypt-1.0.5 \
-      \
+        \
+    # redis
     && pecl install redis \
     && docker-php-ext-enable redis \
+        \
+    # mongodb
     && pecl install mongodb \
     && docker-php-ext-enable mongodb \
+        \
+    # xdebug
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \
+        \
+    # xlswriter
     && pecl install xlswriter \
     && docker-php-ext-enable xlswriter \
+        \
+    # mcrypt
     && pecl install mcrypt \
     && docker-php-ext-enable mcrypt \
-      \
+        \
     # ext imagick
     && pecl install imagick \
     && docker-php-ext-enable imagick \
+        \
     # event 需要单独安装, 加载顺序滞后
     && pecl install event \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache \
-      \
-# remove build deps
+        \
+    # remove build deps
     && apk del .build-deps \
     && rm -rf /tmp/pear \
         \
@@ -120,7 +126,10 @@ RUN set -ex \
     && chmod -R +x /docker-entrypoint.d \
         \
     && mkdir -p /var/log/nginx \
-    && chown -R www-data:www-data /var/log/nginx
+    && chown -R www-data:www-data /var/log/nginx \
+    && chown -R www-data:www-data /var/lib/nginx \
+        \
+    && chown -R www-data:www-data /workspace
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
