@@ -5,7 +5,7 @@
 # nginx
 # user-group: 82 www-data
 #
-FROM php:8.2.1-fpm-alpine3.17
+FROM php:8.2.0-fpm-alpine3.17
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
