@@ -34,8 +34,8 @@ jobs:
     strategy:
       max-parallel: 2
       matrix: # 7.1, 7.2, 7.4,  -  , cli
-        version: [8]
-        mode: [fpm]
+        version: [7.1]
+        mode: [fpm, cli]
 
     steps:
 
