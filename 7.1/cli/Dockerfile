@@ -68,7 +68,7 @@ RUN set -x \
         libevent-dev \
         libmcrypt-dev \
         postgresql-dev \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets mcrypt zip \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets mcrypt zip bcmath \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
