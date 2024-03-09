@@ -25,22 +25,15 @@ COPY docker-entrypoint.d/00-cron-entrypoint.sh          /docker-entrypoint.d/00-
 COPY docker-entrypoint.d/00-supervisor-entrypoint.sh    /docker-entrypoint.d/00-supervisor-entrypoint.sh
 COPY docker-entrypoint.d/00-php-entrypoint.sh           /docker-entrypoint.d/00-php-entrypoint.sh
 
+# install composer
+COPY --from=composer/composer:2.3.10 /composer /usr/local/bin/composer
+RUN chmod +x /usr/local/bin/composer && composer -V
+
 RUN set -x \
 # 切换国内源，可选项
     && if [ "$ENABLE_MIRRORS" = "on" ]; then \
         sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories; \
     fi \
-# install composer
-    && php -v \
-    && tempDir="$(mktemp -d)" \
-    && chown nobody:nobody $tempDir \
-    && cd $tempDir \
-    && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-    && php composer-setup.php \
-    && mv composer.phar /usr/local/bin/composer \
-    && chmod +x /usr/local/bin/composer \
-    && composer -V \
 # install extension
     && pecl config-set preferred_state stable \
 #    && pecl config-set cache_dir $tempDir \
