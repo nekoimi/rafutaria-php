@@ -26,7 +26,7 @@ COPY docker-entrypoint.d/00-supervisor-entrypoint.sh    /docker-entrypoint.d/00-
 COPY docker-entrypoint.d/00-php-entrypoint.sh           /docker-entrypoint.d/00-php-entrypoint.sh
 
 # install composer
-COPY --from=composer/composer:2.3.10 /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer/composer:2.2.23-bin /composer /usr/local/bin/composer
 RUN chmod +x /usr/local/bin/composer && composer -V
 
 RUN set -x \
