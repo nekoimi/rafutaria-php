@@ -32,7 +32,7 @@ COPY supervisor.d           /etc/supervisor.d
 COPY index.php              /workspace/public/index.php
 
 # install composer
-COPY --from=composer/composer:2.3.10 /composer /usr/local/bin/composer
+COPY --from=composer/composer:2.3.10 /usr/bin/composer /usr/local/bin/composer
 RUN chmod +x /usr/local/bin/composer && composer -V
 
 RUN set -x \
