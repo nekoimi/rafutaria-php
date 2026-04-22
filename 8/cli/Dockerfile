@@ -70,7 +70,7 @@ RUN set -x \
         postgresql-dev \
         imagemagick-dev \
         libtool \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl gd sockets zip bcmath \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets zip bcmath \
     && docker-php-ext-enable opcache \
     && if [ ! -z "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
@@ -85,11 +85,7 @@ RUN set -x \
     && apk add --no-cache --virtual .zip-runtime-deps libzip \
     && apk add --no-cache --virtual .mongodb-runtime-deps zstd \
 # ext gd
-    && docker-php-ext-configure gd --with-webp-dir=/usr/include/ \
-        --with-freetype-dir=/usr/include/ \
-        --with-jpeg-dir=/usr/include/ \
-        --with-png-dir=/usr/include/ \
-        --with-xpm-dir=/usr/include/ \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd \
 # swoole
     && \

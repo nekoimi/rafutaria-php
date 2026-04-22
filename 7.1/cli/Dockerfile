@@ -89,7 +89,6 @@ RUN set -x \
     && pecl clear-cache || echo 'pecl no cache to clean up' \
 # remove ext build deps
     && apk del .build-php-ext-deps \
-    && rm -rf "$tempDir" \
     && rm -rf /tmp/pear \
         \
 # install su-exec
