@@ -13,7 +13,7 @@ This is a **Docker image builder** that produces pre-built PHP runtime images pu
 - `supervisor.d/` — Supervisor configs for php-fpm and nginx processes
 - `docker-entrypoint.d/` — Entrypoint scripts that run on container start (sorted alphabetically)
 - `docker-entrypoint.sh` — Main entrypoint that discovers and executes `docker-entrypoint.d/*.sh`
-- `index.php` — Default `phpinfo()` page placed at `/workspace/public/index.php`
+- `index.php` — Default health check page placed at `/workspace/public/index.php`
 
 ## Build Commands
 
@@ -79,11 +79,11 @@ Applications are mounted at `/workspace`. The image supports configuration overr
 
 ## CI/CD
 
-GitHub Actions (`.github/workflows/docker-image.yml`) builds and pushes on push/PR to `master`. Currently the matrix only includes PHP 7.1 despite Dockerfiles existing for 7.2, 7.4, and 8. Tag format: `nekoimi/rafutaria-php:{version}-{mode}-alpine`.
+GitHub Actions (`.github/workflows/docker-image.yml`) builds and pushes on push/PR to `master`. The matrix includes all PHP versions [7.1, 7.2, 7.4, 8] with both fpm and cli modes, building for linux/amd64 and linux/arm64. Tag format: `nekoimi/rafutaria-php:{version}-{mode}-alpine`.
 
 ## PHP Version Differences
 
-- **PHP 8 FPM** diverges from 7.x patterns: installs Nginx via `apk add` instead of building from source, and installs PECL extensions individually rather than via a loop
-- **Composer 2.2.23** is installed in all versions (multi-stage copy in 7.1, direct install in others)
+- **PHP 8 FPM** diverges from 7.x patterns: installs Nginx via `apk add` instead of building from source, and installs PECL extensions individually with version pins rather than via a loop
+- **Composer 2.2.23** is installed via `COPY --from=composer/composer:2.2.23-bin` in all versions
 - **mcrypt** is only available in 7.1/7.2/7.4; **imagick** is only in PHP 8
 - Default timezone is `Asia/Shanghai`

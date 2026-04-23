@@ -61,7 +61,7 @@ RUN set -ex \
         | pecl install https://pecl.php.net/get/swoole-$EXT_SWOOLE_VERSION \
     && docker-php-ext-enable swoole \
     && pecl install imagick && docker-php-ext-enable imagick \
-    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
+    && apk add --no-cache --virtual .imagick-runtime-deps imagemagick libgomp \
     && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
     && pecl clear-cache || true \

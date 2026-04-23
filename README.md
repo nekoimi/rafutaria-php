@@ -25,7 +25,7 @@
 |NGX_WORKER_PROC| 配置nginx进程数，默认为1，可选值：auto或number                                       |√|-|
 |COMPOSER_INSTALL| 当项目目录下面存在composer.lock文件时自动执行composer install， false - 关闭 / true - 开启 |√|√|
 |COMPOSER_UPDATE| 当项目目录下面存在composer.lock文件时自动执行composer update， false - 关闭 / true - 开启  |√|√|
-|CRONTAB_ENABLE| 是否启用crontab定时任务，false - 开启 / true - 关闭                                |√|√|
+|CRONTAB_ENABLE| 是否启用crontab定时任务，false - 关闭 / true - 开启                                |√|√|
 |XDEBUG_ENABLE| 是否开启php xdebug扩展， false - 关闭 / true - 开启                              |√|√|
 |MEMORY_LIMIT| 内存限制                                                                  |√|-|
 |UPLOAD_MAX_SIZE| 上传文件大小限制                                                              |√|-|
