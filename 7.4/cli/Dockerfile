@@ -82,6 +82,4 @@ RUN set -ex \
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-EXPOSE 80
-
 CMD ["/usr/local/bin/php", "-a"]
