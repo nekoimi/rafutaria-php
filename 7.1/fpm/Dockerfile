@@ -11,7 +11,6 @@ FROM php:7.1.33-fpm-alpine3.10
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
 ENV TZ Asia/Shanghai
-
 ENV NGINX_VERSION       1.17.1
 ENV NJS_VERSION         0.3.3
 ENV PKG_RELEASE         1
@@ -23,94 +22,62 @@ ARG ENABLE_MIRRORS=off
 
 WORKDIR /workspace
 
-# Copy resources
-COPY docker-entrypoint.sh   /docker-entrypoint.sh
-COPY docker-entrypoint.d    /docker-entrypoint.d
-COPY nginx/nginx.conf       /etc/nginx/nginx.conf.tpl
-COPY nginx/default.conf     /etc/nginx/conf.d/default.conf
-COPY supervisor.d           /etc/supervisor.d
-COPY index.php              /workspace/public/index.php
-
 # install composer
 COPY --from=composer/composer:2.2.23-bin /composer /usr/local/bin/composer
-RUN chmod +x /usr/local/bin/composer && composer -V
 
-RUN set -x \
-# 切换国内源，可选项
+# Layer 1: 系统运行时依赖
+RUN set -ex \
     && if [ "$ENABLE_MIRRORS" = "on" ]; then \
         sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories; \
     fi \
-# install extension
-    && pecl config-set preferred_state stable \
-#    && pecl config-set cache_dir $tempDir \
     && apk add --no-cache icu-libs libpq libpng libxpm libjpeg libwebp freetype libevent libmcrypt \
+    && apk add --no-cache su-exec tzdata git supervisor \
+    && mkdir -p /var/log/supervisor \
+    && chmod +x /usr/local/bin/composer \
+    && composer -V
+
+# Layer 2: PHP 核心扩展 + PECL 扩展
+RUN set -ex \
+    && pecl config-set preferred_state stable \
     && apk add --no-cache --virtual .build-php-ext-deps \
-        gcc \
-        g++ \
-        make \
-        autoconf \
-        libc-dev \
-        icu-dev \
-            \
-        freetype-dev \
-        libjpeg-turbo-dev \
-        libpng \
-        libpng-dev \
-        jpeg-dev \
-        libjpeg \
-        libwebp-dev \
-        libzip-dev \
-        zlib-dev \
-        libxpm-dev \
-            \
-        libevent-dev \
-        libmcrypt-dev \
-        postgresql-dev \
+        gcc g++ make autoconf libc-dev icu-dev \
+        freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev libzip-dev zlib-dev libxpm-dev \
+        openssl-dev libevent-dev libmcrypt-dev postgresql-dev \
+    && apk add --no-cache --virtual .zip-runtime-deps libzip \
     && docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_pgsql intl pcntl sockets mcrypt zip bcmath \
     && docker-php-ext-enable opcache \
-    && if [ ! -z "$PECL_INSTALL" ]; then \
+    && if [ -n "$PECL_INSTALL" ]; then \
         for ext in $PECL_INSTALL; do \
             echo "pecl install extension => $ext ..." \
             && pecl install http://pecl.php.net/get/$ext \
             || exit 1; \
             extn=$(echo $ext | awk -F - '{print $1}') \
             && docker-php-ext-enable $extn \
-            && php --ri $extn ; \
-        done \
+            && php --ri $extn; \
+        done; \
     fi \
-# ext gd
     && docker-php-ext-configure gd --with-webp-dir=/usr/include/ \
         --with-freetype-dir=/usr/include/ \
         --with-jpeg-dir=/usr/include/ \
         --with-png-dir=/usr/include/ \
         --with-xpm-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd \
-# event 需要单独安装, 加载顺序滞后
     && pecl install http://pecl.php.net/get/event-$EXT_EVENT_VERSION \
     && docker-php-ext-enable --ini-name zz-event.ini event \
-    && pecl clear-cache || echo 'pecl no cache to clean up' \
-# remove ext build deps
+    && pecl clear-cache || true \
     && apk del .build-php-ext-deps \
-    && rm -rf "$tempDir" \
-    && rm -rf /tmp/pear \
-# install nginx
+    && rm -rf /tmp/pear
+
+# Layer 3: nginx
+RUN set -ex \
     && apkArch="$(cat /etc/apk/arch)" \
-# ============ nginx module ============
-# nginx-module-geoip=${NGINX_VERSION}-r${PKG_RELEASE}
-# nginx-module-njs=${NGINX_VERSION}.${NJS_VERSION}-r${PKG_RELEASE}
-# nginx-module-image-filter=${NGINX_VERSION}-r${PKG_RELEASE}
-# nginx-module-xslt=${NGINX_VERSION}-r${PKG_RELEASE}
-# ============ nginx module ============
     && nginxPackages=" \
         nginx=${NGINX_VERSION}-r${PKG_RELEASE} \
     " \
     && case "$apkArch" in \
         x86_64) \
-# arches officially built by upstream
-            set -x \
-            && KEY_SHA512="e7fa8303923d9b95db37a77ad46c68fd4755ff935d0a534d26eba83de193c76166c68bfe7f65471bf8881004ef4aa6df3e34689c305662750c0172fca5d8552a *stdin" \
-            && apk add --no-cache --virtual .cert-deps \
-                openssl \
+            KEY_SHA512="e7fa8303923d9b95db37a77ad46c68fd4755ff935d0a534d26eba83de193c76166c68bfe7f65471bf8881004ef4aa6df3e34689c305662750c0172fca5d8552a *stdin" \
+            && apk add --no-cache --virtual .cert-deps openssl \
             && wget -O /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
             && if [ "$(openssl rsa -pubin -in /tmp/nginx_signing.rsa.pub -text -noout | openssl sha512 -r)" = "$KEY_SHA512" ]; then \
                 echo "key verification succeeded!"; \
@@ -127,28 +94,12 @@ RUN set -x \
             && apk del .cert-deps \
             ;; \
         *) \
-# we're on an architecture upstream doesn't officially build for
-# let's build binaries from the published packaging sources
-            set -x \
-            && tempDir="$(mktemp -d)" \
+            tempDir="$(mktemp -d)" \
             && chown nobody:nobody $tempDir \
             && apk add --no-cache --virtual .build-deps \
-                gcc \
-                libc-dev \
-                make \
-                openssl-dev \
-                pcre-dev \
-                zlib-dev \
-                linux-headers \
-                libxslt-dev \
-                gd-dev \
-                geoip-dev \
-                perl-dev \
-                libedit-dev \
-                mercurial \
-                bash \
-                alpine-sdk \
-                findutils \
+                gcc libc-dev make openssl-dev pcre-dev zlib-dev linux-headers \
+                libxslt-dev gd-dev geoip-dev perl-dev libedit-dev \
+                mercurial bash alpine-sdk findutils \
             && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
@@ -163,22 +114,17 @@ RUN set -x \
             && echo "${tempDir}/packages/alpine/" >> /etc/apk/repositories \
             && cp ${tempDir}/.abuild/abuild-key.rsa.pub /etc/apk/keys/ \
             && apk del .build-deps \
+            && rm -rf "$tempDir" \
             ;; \
     esac \
     && apk add --no-cache $nginxPackages \
-# if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
-    && if [ -n "$tempDir" ]; then rm -rf "$tempDir"; fi \
-    && if [ -n "/etc/apk/keys/abuild-key.rsa.pub" ]; then rm -f /etc/apk/keys/abuild-key.rsa.pub; fi \
-    && if [ -n "/etc/apk/keys/nginx_signing.rsa.pub" ]; then rm -f /etc/apk/keys/nginx_signing.rsa.pub; fi \
-# remove the last line with the packages repos in the repositories file
-    && sed -i '$ d' /etc/apk/repositories \
-# Bring in gettext so we can get `envsubst`, then throw
-# the rest away. To do this, we need to install `gettext`
-# then move `envsubst` out of the way so `gettext` can
-# be deleted completely, then move `envsubst` back.
+    && rm -f /etc/apk/keys/abuild-key.rsa.pub /etc/apk/keys/nginx_signing.rsa.pub \
+    && sed -i '$ d' /etc/apk/repositories
+
+# Layer 4: envsubst
+RUN set -ex \
     && apk add --no-cache --virtual .gettext gettext \
     && mv /usr/bin/envsubst /tmp/ \
-        \
     && runDeps="$( \
         scanelf --needed --nobanner /tmp/envsubst \
             | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
@@ -188,17 +134,19 @@ RUN set -x \
     )" \
     && apk add --no-cache $runDeps \
     && apk del .gettext \
-    && mv /tmp/envsubst /usr/local/bin/ \
-        \
-# install su-exec
-    && apk add --no-cache su-exec \
-        \
-    && apk add --no-cache tzdata git supervisor \
-    && mkdir -p /var/log/supervisor \
-        \
+    && mv /tmp/envsubst /usr/local/bin/
+
+# Layer 5: 入口点脚本和配置
+COPY docker-entrypoint.sh   /docker-entrypoint.sh
+COPY docker-entrypoint.d    /docker-entrypoint.d
+COPY nginx/nginx.conf       /etc/nginx/nginx.conf.tpl
+COPY nginx/default.conf     /etc/nginx/conf.d/default.conf
+COPY supervisor.d           /etc/supervisor.d
+COPY index.php              /workspace/public/index.php
+
+RUN set -ex \
     && chmod +x /docker-entrypoint.sh \
     && chmod -R +x /docker-entrypoint.d \
-        \
     && mkdir -p /var/log/nginx \
     && chown -R www-data:www-data /var/log/nginx \
     && chown -R www-data:www-data /workspace
