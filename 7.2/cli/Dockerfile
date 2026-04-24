@@ -5,7 +5,7 @@
 # php: 7.2.34
 # user-group: 82 www-data
 #
-FROM php:7.2.34-alpine3.12
+FROM php:8.0.7-alpine3.12
 
 LABEL maintainer="nekoimi <nekoimime@gmail.com>"
 
