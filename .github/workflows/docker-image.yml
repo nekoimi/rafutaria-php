@@ -3,8 +3,7 @@ name: Docker Image CI
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
+    branches: [master]
     paths:
       - '.github/workflows/docker-image.yml'
       - '**/Dockerfile'
@@ -14,8 +13,7 @@ on:
       - 'docker-entrypoint.sh'
       - 'index.php'
   pull_request:
-    branches:
-      - master
+    branches: [master]
     paths:
       - '.github/workflows/docker-image.yml'
       - '**/Dockerfile'
@@ -25,19 +23,103 @@ on:
       - 'docker-entrypoint.sh'
       - 'index.php'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      should_build: ${{ steps.set-matrix.outputs.should_build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute build matrix
+        id: set-matrix
+        run: |
+          ALL='{"include":[{"version":"7.1","mode":"fpm"},{"version":"7.1","mode":"cli"},{"version":"7.2","mode":"fpm"},{"version":"7.2","mode":"cli"},{"version":"7.4","mode":"fpm"},{"version":"7.4","mode":"cli"},{"version":"8","mode":"fpm"},{"version":"8","mode":"cli"}]}'
+
+          # Manual trigger — build all
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Determine base ref
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+
+          # Initial push or force push — build all
+          if [ -z "$BASE" ] || echo "$BASE" | grep -qE '^0+$'; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE" HEAD 2>/dev/null || true)
+
+          # Can't determine changes — build all (safe fallback)
+          if [ -z "$CHANGED" ]; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Shared files/dirs that affect all images
+          if echo "$CHANGED" | grep -qE '^(docker-entrypoint\.sh|index\.php|\.github/workflows/docker-image\.yml)'; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if echo "$CHANGED" | grep -qE '^(nginx/|supervisor\.d/|docker-entrypoint\.d/)'; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Only build version/mode combos with changes
+          INCLUDE=""
+          for v in 7.1 7.2 7.4 8; do
+            for m in fpm cli; do
+              if echo "$CHANGED" | grep -qE "^${v}/${m}/"; then
+                [ -n "$INCLUDE" ] && INCLUDE="$INCLUDE,"
+                INCLUDE="${INCLUDE}{\"version\":\"$v\",\"mode\":\"$m\"}"
+              fi
+            done
+          done
+
+          if [ -z "$INCLUDE" ]; then
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "matrix={\"include\":[$INCLUDE]}" >> "$GITHUB_OUTPUT"
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
-
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should_build == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     strategy:
       max-parallel: 4
-      matrix:
-        version: [7.1, 7.2, 7.4, 8]
-        mode: [fpm, cli]
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
 
     steps:
+      - uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -46,15 +128,29 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: nekoimi/rafutaria-php
+          tags: |
+            type=raw,value=${{ matrix.version }}-${{ matrix.mode }}-alpine
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
+          context: .
           file: ./${{ matrix.version }}/${{ matrix.mode }}/Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: true
-          tags: nekoimi/rafutaria-php:${{ matrix.version }}-${{ matrix.mode }}-alpine
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.version }}-${{ matrix.mode }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.version }}-${{ matrix.mode }}
+          provenance: false
